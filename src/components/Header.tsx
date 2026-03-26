@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { CanvasItemState, ExportFormat, ProjectConfig } from '../types';
 import { PROJECT_CONFIGS } from '../constants';
 import { downloadBatch } from '../utils/download';
@@ -17,10 +18,10 @@ export function Header({
   onProjectChange,
   onFormatChange,
 }: HeaderProps) {
+  const [allChecked, setAllChecked] = useState(false);
   const imagesReady = items.filter((it) => it.hasImage);
-  const anyWithImage = imagesReady.length > 0;
 
-  const handleDownloadAll = async () => {
+  const handleDownloadZip = async () => {
     await downloadBatch(imagesReady, items, format);
   };
 
@@ -65,15 +66,31 @@ export function Header({
           </button>
         </div>
 
-        {/* Batch download — always downloads ALL loaded images */}
-        <button
-          className="btn btn--primary"
-          onClick={handleDownloadAll}
-          disabled={!anyWithImage}
-          title={anyWithImage ? `Download all ${imagesReady.length} image(s) as ZIP` : 'No images loaded'}
-        >
-          Download All ZIP
-        </button>
+        {/* All checkbox */}
+        <label className="header__select-all">
+          <input
+            type="checkbox"
+            checked={allChecked}
+            onChange={(e) => setAllChecked(e.target.checked)}
+          />
+          <span>All</span>
+        </label>
+
+        {/* Download ZIP — only visible when All is checked */}
+        {allChecked && (
+          <button
+            className="btn btn--primary"
+            onClick={handleDownloadZip}
+            disabled={imagesReady.length === 0}
+            title={
+              imagesReady.length > 0
+                ? `Download all ${imagesReady.length} image(s) as ZIP`
+                : 'No images loaded'
+            }
+          >
+            Download ZIP
+          </button>
+        )}
       </div>
     </header>
   );

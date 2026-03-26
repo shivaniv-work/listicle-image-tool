@@ -102,7 +102,7 @@ export function CanvasItem({
             disabled={!item.hasImage}
             title={item.hasImage ? `Download as ${format.toUpperCase()}` : 'No image loaded'}
           >
-            {format === 'jpeg' ? 'JPG' : format === 'png' ? 'PNG' : 'WebP'}
+            Download
           </button>
           <button
             className="btn btn--sm btn--danger"
@@ -137,10 +137,10 @@ export function CanvasItem({
               <span>Drag image, paste, or click to upload</span>
             </div>
           )}
+          {/* No height prop — React updating height would clear canvas content */}
           <canvas
             ref={onRegisterCanvas}
             width={project.width}
-            height={item.imageHeight}
             style={{ display: item.hasImage ? 'block' : 'none' }}
           />
         </div>
