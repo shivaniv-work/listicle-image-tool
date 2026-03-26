@@ -3,7 +3,7 @@ import type { ProjectConfig } from './types';
 export const PROJECT_CONFIGS: ProjectConfig[] = [
   { id: 'soi',            name: 'SOI',            width: 683, defaultHeight: 400 },
   { id: 'soa',            name: 'SOA',            width: 800, defaultHeight: 500 },
-  { id: 'mcb',            name: 'MCB',            width: 995, defaultHeight: 500 },
+  { id: 'mcb',            name: 'MCB',            width: 800, defaultHeight: 400 },
   { id: 'soc',            name: 'SOC',            width: 995, defaultHeight: 500 },
   { id: 'textbolt',       name: 'Textbolt',       width: 960, defaultHeight: 500 },
   { id: 'contentbridge',  name: 'Content Bridge', width: 708, defaultHeight: 500 },
