@@ -13,6 +13,7 @@ interface CanvasItemProps {
   onDelete: () => void;
   onSetActive: () => void;
   onRegisterCanvas: (el: HTMLCanvasElement | null) => void;
+  onSetHeight: (height: number) => void;
 }
 
 export function CanvasItem({
@@ -25,11 +26,19 @@ export function CanvasItem({
   onDelete,
   onSetActive,
   onRegisterCanvas,
+  onSetHeight,
 }: CanvasItemProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editing, setEditing] = useState(false);
   const [draftName, setDraftName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const [heightDraft, setHeightDraft] = useState(item.canvasHeight);
+
+  // Sync height input when image is loaded (height recomputed from aspect ratio)
+  useEffect(() => {
+    setHeightDraft(item.canvasHeight);
+  }, [item.canvasHeight]);
 
   const displayLabel = item.customName ?? `Image ${index + 1}`;
 
@@ -64,9 +73,16 @@ export function CanvasItem({
     fileInputRef.current?.click();
   };
 
+  const commitHeight = () => {
+    const h = Math.max(100, Math.min(3000, heightDraft || 100));
+    setHeightDraft(h);
+    onSetHeight(h);
+  };
+
   return (
     <div
       className={`canvas-item${item.isActive ? ' canvas-item--active' : ''}`}
+      style={{ width: project.width }}
       onClick={onSetActive}
     >
       {/* Top bar */}
@@ -94,6 +110,26 @@ export function CanvasItem({
             {displayLabel}
           </span>
         )}
+
+        {/* Canvas size display with editable height */}
+        <div className="canvas-item__size" onClick={(e) => e.stopPropagation()}>
+          <span>{project.width}</span>
+          <span className="canvas-item__size-sep">×</span>
+          <input
+            type="number"
+            className="canvas-item__height-input"
+            value={heightDraft}
+            min={100}
+            max={3000}
+            step={10}
+            onChange={(e) => setHeightDraft(Number(e.target.value))}
+            onBlur={commitHeight}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitHeight();
+            }}
+          />
+          <span>px</span>
+        </div>
 
         <div className="canvas-item__actions">
           <button

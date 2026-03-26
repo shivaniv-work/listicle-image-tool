@@ -6,11 +6,12 @@ import type { CanvasItemState, ExportFormat, ProjectConfig } from '../types';
 
 function makeItem(
   refsMap: Map<string, { current: HTMLCanvasElement | null }>,
+  defaultHeight: number,
 ): CanvasItemState {
   const id = uuidv4();
   const canvasRef = { current: null } as React.RefObject<HTMLCanvasElement | null>;
   refsMap.set(id, canvasRef);
-  return { id, customName: null, canvasRef, hasImage: false, isActive: false };
+  return { id, customName: null, canvasRef, hasImage: false, isActive: false, canvasHeight: defaultHeight, imageFile: null };
 }
 
 export function useImageTool() {
@@ -20,11 +21,15 @@ export function useImageTool() {
   const canvasRefsRef = useRef<Map<string, { current: HTMLCanvasElement | null }>>(new Map());
   const activeIdRef = useRef<string | null>(null);
 
-  const [items, setItems] = useState<CanvasItemState[]>(() => [makeItem(canvasRefsRef.current)]);
+  const [items, setItems] = useState<CanvasItemState[]>(() => [
+    makeItem(canvasRefsRef.current, PROJECT_CONFIGS[0].defaultHeight),
+  ]);
 
-  // Always-current snapshot of items — safe to read in callbacks without stale closure.
+  // Always-current snapshots — safe to read in callbacks without stale closure.
   const itemsRef = useRef(items);
   itemsRef.current = items;
+  const projectRef = useRef(project);
+  projectRef.current = project;
 
   const registerCanvasRef = useCallback((id: string, el: HTMLCanvasElement | null) => {
     const ref = canvasRefsRef.current.get(id);
@@ -37,7 +42,7 @@ export function useImageTool() {
   }, []);
 
   const addCanvas = useCallback(() => {
-    setItems((prev) => [...prev, makeItem(canvasRefsRef.current)]);
+    setItems((prev) => [...prev, makeItem(canvasRefsRef.current, projectRef.current.defaultHeight)]);
   }, []);
 
   const removeCanvas = useCallback((id: string) => {
@@ -46,12 +51,13 @@ export function useImageTool() {
         // Only one canvas — reset it to blank instead of removing
         const item = prev[0];
         const canvas = item.canvasRef.current;
+        const defaultHeight = projectRef.current.defaultHeight;
         if (canvas) {
           canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
-          canvas.height = 400;
+          canvas.height = defaultHeight;
         }
         if (activeIdRef.current === id) activeIdRef.current = null;
-        return [{ ...item, hasImage: false, isActive: false }];
+        return [{ ...item, hasImage: false, isActive: false, canvasHeight: defaultHeight, imageFile: null }];
       }
       canvasRefsRef.current.delete(id);
       if (activeIdRef.current === id) activeIdRef.current = null;
@@ -82,7 +88,7 @@ export function useImageTool() {
             canvas.height = canvasHeight;
             canvas.getContext('2d')!.drawImage(img, 0, 0, canvasWidth, canvasHeight);
             URL.revokeObjectURL(url);
-            return { ...it, hasImage: true };
+            return { ...it, hasImage: true, canvasHeight, imageFile: file };
           }),
         );
       };
@@ -90,6 +96,33 @@ export function useImageTool() {
     },
     [project],
   );
+
+  const setCanvasHeight = useCallback((id: string, height: number) => {
+    const item = itemsRef.current.find((it) => it.id === id);
+    if (!item) return;
+
+    const canvas = item.canvasRef.current;
+    if (canvas) {
+      if (item.imageFile) {
+        const url = URL.createObjectURL(item.imageFile);
+        const img = new Image();
+        img.onload = () => {
+          const w = projectRef.current.width;
+          canvas.width = w;
+          canvas.height = height;
+          canvas.getContext('2d')!.drawImage(img, 0, 0, w, height);
+          URL.revokeObjectURL(url);
+        };
+        img.src = url;
+      } else {
+        canvas.height = height;
+      }
+    }
+
+    setItems((prev) =>
+      prev.map((it) => (it.id === id ? { ...it, canvasHeight: height } : it)),
+    );
+  }, []);
 
   const handleImagePaste = useCallback(
     (file: File) => {
@@ -110,7 +143,7 @@ export function useImageTool() {
       // Otherwise create a new canvas. flushSync forces React to commit the
       // new canvas to the DOM (and fire its ref callback) before we draw,
       // so canvasRef.current is guaranteed to be set.
-      const newItem = makeItem(canvasRefsRef.current);
+      const newItem = makeItem(canvasRefsRef.current, projectRef.current.defaultHeight);
       flushSync(() => setItems((prev) => [...prev, newItem]));
       drawImageToCanvas(newItem.id, file);
     },
@@ -121,7 +154,7 @@ export function useImageTool() {
     const newProject = PROJECT_CONFIGS.find((p) => p.id === newId)!;
     setProject(newProject);
     canvasRefsRef.current.clear();
-    setItems([makeItem(canvasRefsRef.current)]);
+    setItems([makeItem(canvasRefsRef.current, newProject.defaultHeight)]);
     activeIdRef.current = null;
   }, []);
 
@@ -138,5 +171,6 @@ export function useImageTool() {
     handleProjectChange,
     setActiveCanvas,
     registerCanvasRef,
+    setCanvasHeight,
   };
 }

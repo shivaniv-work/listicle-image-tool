@@ -152,6 +152,7 @@
   border: 2px solid transparent;
   transition: border-color 0.15s;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .canvas-item:focus-within {
@@ -215,6 +216,36 @@
   display: flex;
   gap: 6px;
   flex-shrink: 0;
+}
+
+/* canvas size + editable height */
+.canvas-item__size {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.canvas-item__size-sep {
+  color: #9ca3af;
+}
+
+.canvas-item__height-input {
+  width: 58px;
+  font-size: 13px;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 2px 4px;
+  text-align: center;
+  outline: none;
+  background: #fff;
+}
+
+.canvas-item__height-input:focus {
+  border-color: #2563eb;
 }
 
 /* canvas wrapper */
@@ -306,4 +337,187 @@
 .fab:hover {
   background: #1d4ed8;
   transform: scale(1.08);
+}
+
+/* ── Tab bar ─────────────────────────────────────────────── */
+.tab-bar {
+  display: flex;
+  gap: 4px;
+}
+
+/* ── Logo Tool ───────────────────────────────────────────── */
+.logo-tool {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.logo-tool__input {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.logo-tool__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.logo-tool__textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: monospace;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  resize: vertical;
+  outline: none;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.logo-tool__textarea:focus {
+  border-color: #2563eb;
+}
+
+.logo-tool__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.logo-tool__project-selector {
+  display: flex;
+  gap: 4px;
+}
+
+/* ── Results ─────────────────────────────────────────────── */
+.logo-tool__results {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.logo-tool__results-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ── Entry card ──────────────────────────────────────────── */
+.logo-entry {
+  background: #1e1e2e;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.logo-entry__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #2d2d4e;
+}
+
+.logo-entry__domain {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e2e8f0;
+  flex: 1;
+}
+
+.logo-entry__error {
+  font-size: 13px;
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+
+/* Loading spinner */
+.logo-entry__spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #4a4a7a;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Project canvas grid ─────────────────────────────────── */
+.logo-entry__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px;
+}
+
+.logo-project-card {
+  background: #2d2d4e;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.logo-project-card__header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.logo-project-card__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.logo-project-card__size {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.logo-project-card__canvas-wrap {
+  background: #fff;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
+  min-height: 40px;
+  overflow: hidden;
+}
+
+.logo-project-card__canvas {
+  display: block;
+  max-width: 200px;
+}
+
+.logo-project-card__loading {
+  width: 100px;
+  height: 40px;
+  background: linear-gradient(90deg, #e5e7eb 25%, #d1d5db 50%, #e5e7eb 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.logo-project-card__dl {
+  align-self: flex-start;
 }

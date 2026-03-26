@@ -11,6 +11,7 @@ interface CanvasListProps {
   onSetActive: (id: string) => void;
   onAddCanvas: () => void;
   onRegisterCanvas: (id: string, el: HTMLCanvasElement | null) => void;
+  onSetCanvasHeight: (id: string, height: number) => void;
 }
 
 export function CanvasList({
@@ -23,6 +24,7 @@ export function CanvasList({
   onSetActive,
   onAddCanvas,
   onRegisterCanvas,
+  onSetCanvasHeight,
 }: CanvasListProps) {
   return (
     <div className="canvas-list">
@@ -38,6 +40,7 @@ export function CanvasList({
           onDelete={() => onDelete(item.id)}
           onSetActive={() => onSetActive(item.id)}
           onRegisterCanvas={(el) => onRegisterCanvas(item.id, el)}
+          onSetHeight={(height) => onSetCanvasHeight(item.id, height)}
         />
       ))}
 

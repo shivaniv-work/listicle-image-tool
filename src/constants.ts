@@ -11,6 +11,22 @@ export const PROJECT_CONFIGS: ProjectConfig[] = [
   { id: 'welco',          name: 'Welco',          width: 912, defaultHeight: 500 },
 ];
 
+export interface LogoProjectSpec {
+  id: string;
+  name: string;
+  logoType: 'full' | 'favicon';
+  canvasWidth: number | 'auto';
+  canvasHeight: number;
+  margin: { top: number; right: number; bottom: number; left: number };
+}
+
+export const LOGO_PROJECT_SPECS: LogoProjectSpec[] = [
+  { id: 'soa', name: 'SOA', logoType: 'full',    canvasWidth: 100,    canvasHeight: 100, margin: { top: 0,  right: 0,  bottom: 0,  left: 0  } },
+  { id: 'mcb', name: 'MCB', logoType: 'favicon', canvasWidth: 100,    canvasHeight: 100, margin: { top: 10, right: 10, bottom: 10, left: 10 } },
+  { id: 'soi', name: 'SOI', logoType: 'favicon', canvasWidth: 100,    canvasHeight: 100, margin: { top: 10, right: 10, bottom: 10, left: 10 } },
+  { id: 'soc', name: 'SOC', logoType: 'full',    canvasWidth: 'auto', canvasHeight: 40,  margin: { top: 5,  right: 0,  bottom: 5,  left: 0  } },
+];
+
 export const COMPRESSION_MAX_SIZE_BYTES = 100_000; // 100 KB
 export const COMPRESSION_QUALITY_START  = 0.85;
 export const COMPRESSION_QUALITY_MIN    = 0.30;
