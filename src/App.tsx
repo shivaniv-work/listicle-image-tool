@@ -13,8 +13,6 @@ function App() {
     addCanvas,
     removeCanvas,
     renameCanvas,
-    toggleSelect,
-    toggleSelectAll,
     drawImageToCanvas,
     handleImagePaste,
     handleProjectChange,
@@ -32,7 +30,6 @@ function App() {
         items={items}
         onProjectChange={handleProjectChange}
         onFormatChange={setFormat}
-        onToggleSelectAll={toggleSelectAll}
       />
 
       <main className="main">
@@ -43,7 +40,6 @@ function App() {
           onImageDrop={drawImageToCanvas}
           onRename={renameCanvas}
           onDelete={removeCanvas}
-          onToggleSelect={toggleSelect}
           onSetActive={setActiveCanvas}
           onAddCanvas={addCanvas}
           onRegisterCanvas={registerCanvasRef}

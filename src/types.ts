@@ -13,6 +13,5 @@ export interface CanvasItemState {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   hasImage: boolean;
   imageHeight: number;
-  isSelected: boolean;
   isActive: boolean;
 }

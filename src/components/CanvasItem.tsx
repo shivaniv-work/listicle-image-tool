@@ -11,7 +11,6 @@ interface CanvasItemProps {
   onImageDrop: (file: File) => void;
   onRename: (name: string) => void;
   onDelete: () => void;
-  onToggleSelect: () => void;
   onSetActive: () => void;
   onRegisterCanvas: (el: HTMLCanvasElement | null) => void;
 }
@@ -24,7 +23,6 @@ export function CanvasItem({
   onImageDrop,
   onRename,
   onDelete,
-  onToggleSelect,
   onSetActive,
   onRegisterCanvas,
 }: CanvasItemProps) {
@@ -63,20 +61,11 @@ export function CanvasItem({
 
   return (
     <div
-      className={`canvas-item${item.isSelected ? ' canvas-item--selected' : ''}${item.isActive ? ' canvas-item--active' : ''}`}
+      className={`canvas-item${item.isActive ? ' canvas-item--active' : ''}`}
       onClick={onSetActive}
     >
       {/* Top bar */}
       <div className="canvas-item__bar">
-        <input
-          type="checkbox"
-          className="canvas-item__checkbox"
-          checked={item.isSelected}
-          onChange={onToggleSelect}
-          onClick={(e) => e.stopPropagation()}
-          title="Select"
-        />
-
         {editing ? (
           <input
             ref={inputRef}
@@ -113,7 +102,7 @@ export function CanvasItem({
             className="btn btn--sm btn--primary"
             onClick={(e) => { e.stopPropagation(); handleDownload(); }}
             disabled={!item.hasImage}
-            title={item.hasImage ? 'Download' : 'No image loaded'}
+            title={item.hasImage ? `Download as ${format.toUpperCase()}` : 'No image loaded'}
           >
             {format === 'jpeg' ? 'JPG' : format === 'png' ? 'PNG' : 'WebP'}
           </button>
@@ -156,14 +145,7 @@ export function CanvasItem({
       </DropZone>
 
       {format === 'png' && item.hasImage && (
-        <p className="canvas-item__png-note">
-          PNG is lossless — file may exceed 100 KB
-        </p>
-      )}
-      {format === 'webp' && item.hasImage && (
-        <p className="canvas-item__png-note">
-          WebP — compressed to &lt;100 KB
-        </p>
+        <p className="canvas-item__png-note">PNG is lossless — file may exceed 100 KB</p>
       )}
     </div>
   );

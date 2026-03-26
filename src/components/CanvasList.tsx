@@ -8,7 +8,6 @@ interface CanvasListProps {
   onImageDrop: (id: string, file: File) => void;
   onRename: (id: string, name: string) => void;
   onDelete: (id: string) => void;
-  onToggleSelect: (id: string) => void;
   onSetActive: (id: string) => void;
   onAddCanvas: () => void;
   onRegisterCanvas: (id: string, el: HTMLCanvasElement | null) => void;
@@ -21,7 +20,6 @@ export function CanvasList({
   onImageDrop,
   onRename,
   onDelete,
-  onToggleSelect,
   onSetActive,
   onAddCanvas,
   onRegisterCanvas,
@@ -38,7 +36,6 @@ export function CanvasList({
           onImageDrop={(file) => onImageDrop(item.id, file)}
           onRename={(name) => onRename(item.id, name)}
           onDelete={() => onDelete(item.id)}
-          onToggleSelect={() => onToggleSelect(item.id)}
           onSetActive={() => onSetActive(item.id)}
           onRegisterCanvas={(el) => onRegisterCanvas(item.id, el)}
         />

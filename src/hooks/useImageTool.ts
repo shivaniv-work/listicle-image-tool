@@ -1,36 +1,35 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { PROJECT_CONFIGS } from '../constants';
 import type { CanvasItemState, ExportFormat, ProjectConfig } from '../types';
 
-function makeItem(): CanvasItemState {
-  return {
-    id: uuidv4(),
-    customName: null,
-    canvasRef: { current: null } as React.RefObject<HTMLCanvasElement | null>,
-    hasImage: false,
-    imageHeight: 400,
-    isSelected: false,
-    isActive: false,
-  };
+// canvasRefsRef is passed in so the Map is populated at item-creation time,
+// before any render. This means registerCanvasRef can always find the slot
+// immediately when the ref callback fires — no timing issues.
+function makeItem(
+  refsMap: Map<string, { current: HTMLCanvasElement | null }>,
+): CanvasItemState {
+  const id = uuidv4();
+  const canvasRef = { current: null } as React.RefObject<HTMLCanvasElement | null>;
+  refsMap.set(id, canvasRef);
+  return { id, customName: null, canvasRef, hasImage: false, imageHeight: 400, isActive: false };
 }
 
 export function useImageTool() {
   const [project, setProject] = useState<ProjectConfig>(PROJECT_CONFIGS[0]);
   const [format, setFormat] = useState<ExportFormat>('jpeg');
-  const [items, setItems] = useState<CanvasItemState[]>([makeItem()]);
+
+  // Stable Map: id → canvasRef object. Populated synchronously inside makeItem,
+  // so it is always ready before React calls the ref callback.
+  const canvasRefsRef = useRef<Map<string, { current: HTMLCanvasElement | null }>>(new Map());
   const activeIdRef = useRef<string | null>(null);
 
-  // Keep a stable ref to the current items array so registerCanvasRef
-  // can directly mutate canvasRef.current without calling setItems
-  // (calling setItems here would trigger a re-render → new ref callback → infinite loop)
-  const itemsRef = useRef(items);
-  useEffect(() => { itemsRef.current = items; }, [items]);
+  const [items, setItems] = useState<CanvasItemState[]>(() => [makeItem(canvasRefsRef.current)]);
 
-  // Directly mutate canvasRef.current — NO setState, so no re-render loop
+  // Directly mutates the canvasRef slot — no setState, so no re-render loop.
   const registerCanvasRef = useCallback((id: string, el: HTMLCanvasElement | null) => {
-    const item = itemsRef.current.find((it) => it.id === id);
-    if (item) item.canvasRef.current = el;
+    const ref = canvasRefsRef.current.get(id);
+    if (ref) ref.current = el;
   }, []);
 
   const setActiveCanvas = useCallback((id: string | null) => {
@@ -39,10 +38,11 @@ export function useImageTool() {
   }, []);
 
   const addCanvas = useCallback(() => {
-    setItems((prev) => [...prev, makeItem()]);
+    setItems((prev) => [...prev, makeItem(canvasRefsRef.current)]);
   }, []);
 
   const removeCanvas = useCallback((id: string) => {
+    canvasRefsRef.current.delete(id);
     setItems((prev) => {
       if (prev.length <= 1) return prev;
       return prev.filter((it) => it.id !== id);
@@ -53,16 +53,6 @@ export function useImageTool() {
     setItems((prev) =>
       prev.map((it) => (it.id === id ? { ...it, customName: name.trim() || null } : it)),
     );
-  }, []);
-
-  const toggleSelect = useCallback((id: string) => {
-    setItems((prev) =>
-      prev.map((it) => (it.id === id ? { ...it, isSelected: !it.isSelected } : it)),
-    );
-  }, []);
-
-  const toggleSelectAll = useCallback((selectAll: boolean) => {
-    setItems((prev) => prev.map((it) => ({ ...it, isSelected: selectAll })));
   }, []);
 
   const drawImageToCanvas = useCallback(
@@ -98,7 +88,10 @@ export function useImageTool() {
       if (activeId) {
         drawImageToCanvas(activeId, file);
       } else {
-        const newItem = makeItem();
+        // No active canvas — create one. The canvasRefsRef Map is populated
+        // immediately inside makeItem, so by the time setTimeout fires
+        // (after React commits + ref callbacks run), canvasRef.current is set.
+        const newItem = makeItem(canvasRefsRef.current);
         setItems((prev) => [...prev, newItem]);
         setTimeout(() => drawImageToCanvas(newItem.id, file), 0);
       }
@@ -109,7 +102,8 @@ export function useImageTool() {
   const handleProjectChange = useCallback((newId: string) => {
     const newProject = PROJECT_CONFIGS.find((p) => p.id === newId)!;
     setProject(newProject);
-    setItems([makeItem()]);
+    canvasRefsRef.current.clear();
+    setItems([makeItem(canvasRefsRef.current)]);
     activeIdRef.current = null;
   }, []);
 
@@ -121,8 +115,6 @@ export function useImageTool() {
     addCanvas,
     removeCanvas,
     renameCanvas,
-    toggleSelect,
-    toggleSelectAll,
     drawImageToCanvas,
     handleImagePaste,
     handleProjectChange,

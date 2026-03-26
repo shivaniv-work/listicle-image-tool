@@ -8,7 +8,6 @@ interface HeaderProps {
   items: CanvasItemState[];
   onProjectChange: (id: string) => void;
   onFormatChange: (f: ExportFormat) => void;
-  onToggleSelectAll: (all: boolean) => void;
 }
 
 export function Header({
@@ -17,21 +16,13 @@ export function Header({
   items,
   onProjectChange,
   onFormatChange,
-  onToggleSelectAll,
 }: HeaderProps) {
-  const selectedItems = items.filter((it) => it.isSelected && it.hasImage);
-  const allSelected = items.length > 0 && items.every((it) => it.isSelected);
-  const anyWithImage = items.some((it) => it.hasImage);
+  const imagesReady = items.filter((it) => it.hasImage);
+  const anyWithImage = imagesReady.length > 0;
 
-  const handleBatchDownload = async () => {
-    const targets = selectedItems.length > 0 ? selectedItems : items.filter((it) => it.hasImage);
-    await downloadBatch(targets, items, format);
+  const handleDownloadAll = async () => {
+    await downloadBatch(imagesReady, items, format);
   };
-
-  const batchLabel =
-    selectedItems.length > 0
-      ? `Download Selected (${selectedItems.length}) ZIP`
-      : 'Download All ZIP';
 
   return (
     <header className="header">
@@ -74,24 +65,14 @@ export function Header({
           </button>
         </div>
 
-        {/* Select all */}
-        <label className="header__select-all">
-          <input
-            type="checkbox"
-            checked={allSelected}
-            onChange={(e) => onToggleSelectAll(e.target.checked)}
-          />
-          <span>All</span>
-        </label>
-
-        {/* Batch download */}
+        {/* Batch download — always downloads ALL loaded images */}
         <button
           className="btn btn--primary"
-          onClick={handleBatchDownload}
+          onClick={handleDownloadAll}
           disabled={!anyWithImage}
-          title={anyWithImage ? batchLabel : 'No images loaded'}
+          title={anyWithImage ? `Download all ${imagesReady.length} image(s) as ZIP` : 'No images loaded'}
         >
-          {batchLabel}
+          Download All ZIP
         </button>
       </div>
     </header>
