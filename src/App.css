@@ -237,12 +237,19 @@
   align-items: center;
   justify-content: center;
   border: 2px dashed #d1d5db;
+  cursor: pointer;
   margin: 16px;
   border-radius: 6px;
   color: #9ca3af;
   font-size: 14px;
   user-select: none;
   min-height: 88px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.canvas-item__placeholder:hover {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.04);
 }
 
 .canvas-item__png-note {

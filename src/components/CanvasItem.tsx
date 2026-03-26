@@ -59,6 +59,11 @@ export function CanvasItem({
     await downloadSingle(item, index, format);
   };
 
+  const openFilePicker = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    fileInputRef.current?.click();
+  };
+
   return (
     <div
       className={`canvas-item${item.isActive ? ' canvas-item--active' : ''}`}
@@ -92,13 +97,6 @@ export function CanvasItem({
 
         <div className="canvas-item__actions">
           <button
-            className="btn btn--sm"
-            onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-            title="Upload image"
-          >
-            Upload
-          </button>
-          <button
             className="btn btn--sm btn--primary"
             onClick={(e) => { e.stopPropagation(); handleDownload(); }}
             disabled={!item.hasImage}
@@ -131,8 +129,12 @@ export function CanvasItem({
           style={{ width: project.width }}
         >
           {!item.hasImage && (
-            <div className="canvas-item__placeholder">
-              <span>Drop image, paste, or click Upload</span>
+            <div
+              className="canvas-item__placeholder"
+              onClick={openFilePicker}
+              title="Click to upload an image"
+            >
+              <span>Drag image, paste, or click to upload</span>
             </div>
           )}
           <canvas
