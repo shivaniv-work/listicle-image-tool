@@ -1,0 +1,302 @@
+/* ── Layout ───────────────────────────────────────────────── */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  padding: 24px 16px 100px;
+  overflow-x: auto;
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #1a1a2e;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.header__left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header__title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+  color: #fff;
+}
+
+.header__select {
+  background: #2d2d4e;
+  color: #fff;
+  border: 1px solid #4a4a7a;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.header__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header__select-all {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #ccc;
+  user-select: none;
+}
+
+.header__select-all input {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Format toggle ────────────────────────────────────────── */
+.format-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn {
+  cursor: pointer;
+  border: 1px solid #4a4a7a;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  background: transparent;
+  color: #ccc;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  background: #2d2d4e;
+  color: #fff;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn--sm {
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+.btn--primary {
+  background: #2563eb;
+  border-color: #1d4ed8;
+  color: #fff;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.btn--active {
+  background: #2563eb;
+  border-color: #1d4ed8;
+  color: #fff;
+}
+
+.btn--danger {
+  color: #f87171;
+  border-color: #f87171;
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: #7f1d1d;
+  color: #fff;
+  border-color: #991b1b;
+}
+
+/* ── Canvas list ─────────────────────────────────────────── */
+.canvas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+}
+
+/* ── Canvas item card ────────────────────────────────────── */
+.canvas-item {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: border-color 0.15s;
+  cursor: pointer;
+}
+
+.canvas-item:focus-within {
+  border-color: #2563eb;
+}
+
+.canvas-item--selected {
+  border-color: #16a34a;
+}
+
+.canvas-item--active {
+  border-color: #2563eb;
+}
+
+.canvas-item--selected.canvas-item--active {
+  border-color: #2563eb;
+}
+
+/* top bar */
+.canvas-item__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.canvas-item__checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.canvas-item__label {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: text;
+}
+
+.canvas-item__name-input {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  border: 1px solid #2563eb;
+  border-radius: 4px;
+  padding: 2px 6px;
+  outline: none;
+  min-width: 0;
+}
+
+.canvas-item__actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* canvas wrapper */
+.canvas-item__canvas-wrapper {
+  position: relative;
+  display: block;
+  min-height: 120px;
+}
+
+.canvas-item__canvas-wrapper canvas {
+  display: block;
+  max-width: 100%;
+}
+
+/* placeholder */
+.canvas-item__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #d1d5db;
+  margin: 16px;
+  border-radius: 6px;
+  color: #9ca3af;
+  font-size: 14px;
+  user-select: none;
+  min-height: 88px;
+}
+
+.canvas-item__png-note {
+  margin: 0;
+  padding: 4px 14px 8px;
+  font-size: 12px;
+  color: #9ca3af;
+  background: #f8f9fa;
+}
+
+/* ── Drop zone ───────────────────────────────────────────── */
+.drop-zone {
+  position: relative;
+}
+
+.drop-zone__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: rgba(37, 99, 235, 0.08);
+  border: 3px dashed #2563eb;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2563eb;
+  pointer-events: none;
+}
+
+/* ── Floating action button ──────────────────────────────── */
+.fab {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.15s;
+  z-index: 200;
+}
+
+.fab:hover {
+  background: #1d4ed8;
+  transform: scale(1.08);
+}
