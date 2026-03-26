@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { PROJECT_CONFIGS } from '../constants';
 import type { CanvasItemState, ExportFormat, ProjectConfig } from '../types';
@@ -21,13 +21,16 @@ export function useImageTool() {
   const [items, setItems] = useState<CanvasItemState[]>([makeItem()]);
   const activeIdRef = useRef<string | null>(null);
 
-  // Register canvas ref from CanvasItem's ref callback
+  // Keep a stable ref to the current items array so registerCanvasRef
+  // can directly mutate canvasRef.current without calling setItems
+  // (calling setItems here would trigger a re-render → new ref callback → infinite loop)
+  const itemsRef = useRef(items);
+  useEffect(() => { itemsRef.current = items; }, [items]);
+
+  // Directly mutate canvasRef.current — NO setState, so no re-render loop
   const registerCanvasRef = useCallback((id: string, el: HTMLCanvasElement | null) => {
-    setItems((prev) =>
-      prev.map((it) =>
-        it.id === id ? { ...it, canvasRef: { current: el } as React.RefObject<HTMLCanvasElement | null> } : it,
-      ),
-    );
+    const item = itemsRef.current.find((it) => it.id === id);
+    if (item) item.canvasRef.current = el;
   }, []);
 
   const setActiveCanvas = useCallback((id: string | null) => {
@@ -95,7 +98,6 @@ export function useImageTool() {
       if (activeId) {
         drawImageToCanvas(activeId, file);
       } else {
-        // No active canvas — create one and draw after React commits
         const newItem = makeItem();
         setItems((prev) => [...prev, newItem]);
         setTimeout(() => drawImageToCanvas(newItem.id, file), 0);
@@ -107,7 +109,6 @@ export function useImageTool() {
   const handleProjectChange = useCallback((newId: string) => {
     const newProject = PROJECT_CONFIGS.find((p) => p.id === newId)!;
     setProject(newProject);
-    // Clear all canvases
     setItems([makeItem()]);
     activeIdRef.current = null;
   }, []);
