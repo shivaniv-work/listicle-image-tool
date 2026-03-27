@@ -71,8 +71,27 @@ export function useLogoTool() {
     if (!spec) return;
     const canvas = canvasRefsMap.current.get(`${entry.id}-${spec.id}`);
     if (!canvas) return;
+
     const imageUrl = spec.logoType === 'full' ? entry.fullLogoUrl : entry.faviconUrl;
-    if (!imageUrl) return;
+
+    if (!imageUrl) {
+      // Draw a clear "not found" placeholder so the canvas is never silently blank
+      const w = spec.canvasWidth === 'auto' ? 160 : (spec.canvasWidth as number);
+      const h = spec.canvasHeight;
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d')!;
+      ctx.fillStyle = '#f3f4f6';
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = '#d1d5db';
+      ctx.strokeRect(0.5, 0.5, w - 1, h - 1);
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Full logo not found', w / 2, h / 2 + 4);
+      return;
+    }
+
     try {
       const img = await loadImage(imageUrl);
       drawToCanvas(canvas, img, spec);

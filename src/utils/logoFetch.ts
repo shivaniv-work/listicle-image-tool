@@ -47,64 +47,65 @@ async function fetchToBlobUrl(url: string): Promise<string | null> {
   }
 }
 
-/** Try to extract a logo URL from the page's HTML meta tags */
-async function fetchHtmlFallback(domain: string): Promise<string | null> {
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 12_000);
-    // allorigins.win proxies the HTML fetch server-side
-    const res = await fetch(
-      `https://api.allorigins.win/get?url=${encodeURIComponent(`https://${domain}`)}`,
-      { signal: controller.signal },
-    );
-    clearTimeout(timer);
-    const data = (await res.json()) as { contents: string };
-    const html = data.contents ?? '';
+async function fetchPageHtml(domain: string): Promise<string> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12_000);
+  const res = await fetch(
+    `https://api.allorigins.win/get?url=${encodeURIComponent(`https://${domain}`)}`,
+    { signal: controller.signal },
+  );
+  clearTimeout(timer);
+  const data = (await res.json()) as { contents: string };
+  return data.contents ?? '';
+}
 
-    const patterns: RegExp[] = [
-      /apple-touch-icon[^>]*\shref=["']?([^"'\s>]+)/i,
-      /href=["']?([^"'\s>]+)["']?[^>]*apple-touch-icon/i,
-      /og:image[^>]*\scontent=["']?([^"'\s>]+)/i,
-      /content=["']?([^"'\s>]+)["']?[^>]*og:image/i,
-    ];
-
-    for (const pattern of patterns) {
-      const match = html.match(pattern);
-      if (!match?.[1]) continue;
-      const raw = match[1];
-      if (raw.startsWith('data:')) continue;
-      const absolute = raw.startsWith('http')
-        ? raw
-        : `https://${domain}${raw.startsWith('/') ? '' : '/'}${raw}`;
-      // Proxy the extracted image URL through wsrv for CORS
-      const result = await fetchToBlobUrl(wsrv(absolute.replace(/^https?:\/\//, '')));
-      if (result) return result;
-    }
-  } catch {
-    // HTML fetch failed — fall through
+async function resolveFromHtml(html: string, domain: string, patterns: RegExp[]): Promise<string | null> {
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    if (!match?.[1]) continue;
+    const raw = match[1];
+    if (raw.startsWith('data:')) continue;
+    const absolute = raw.startsWith('http')
+      ? raw
+      : `https://${domain}${raw.startsWith('/') ? '' : '/'}${raw}`;
+    const result = await fetchToBlobUrl(wsrv(absolute.replace(/^https?:\/\//, '')));
+    if (result) return result;
   }
   return null;
+}
+
+/** For full logos: prioritise og:image (brand social card) then apple-touch-icon */
+async function fetchFullLogoFromHtml(domain: string): Promise<string | null> {
+  try {
+    const html = await fetchPageHtml(domain);
+    return await resolveFromHtml(html, domain, [
+      // og:image first — usually a 1200×630 image containing the full brand logo
+      /og:image[^>]*\scontent=["']?([^"'\s>]+)/i,
+      /content=["']?([^"'\s>]+)["']?[^>]*og:image/i,
+      // apple-touch-icon as secondary (square but higher quality than favicon)
+      /apple-touch-icon[^>]*\shref=["']?([^"'\s>]+)/i,
+      /href=["']?([^"'\s>]+)["']?[^>]*apple-touch-icon/i,
+    ]);
+  } catch {
+    return null;
+  }
 }
 
 export async function resolveLogos(inputUrl: string): Promise<LogoUrls> {
   const domain = extractDomain(inputUrl);
 
-  // ── Full logo ──────────────────────────────────────────────────────────
-  // 1. Clearbit (great for well-known companies, returns 404 otherwise)
+  // ── Full logo (SOA / SOC) ──────────────────────────────────────────────
+  // 1. Clearbit — horizontal brand logo for well-known companies
   let fullLogoUrl = await fetchToBlobUrl(wsrv(`logo.clearbit.com/${domain}`));
 
-  // 2. Google faviconV2 at 256px (fetches apple-touch-icon quality from the site)
+  // 2. og:image from the homepage HTML (brand social card, usually full logo)
+  //    Do NOT fall back to gstatic here — it returns the same square icon as the favicon
   if (!fullLogoUrl) {
-    fullLogoUrl = await fetchToBlobUrl(gstaticFavicon(domain, 256));
+    fullLogoUrl = await fetchFullLogoFromHtml(domain);
   }
 
-  // 3. HTML meta tag extraction (og:image / apple-touch-icon)
-  if (!fullLogoUrl) {
-    fullLogoUrl = await fetchHtmlFallback(domain);
-  }
-
-  // ── Favicon ────────────────────────────────────────────────────────────
-  // 1. DuckDuckGo favicon (reliable, covers almost every domain)
+  // ── Favicon (MCB / SOI) ───────────────────────────────────────────────
+  // 1. DuckDuckGo favicon
   let faviconUrl = await fetchToBlobUrl(wsrv(`icons.duckduckgo.com/ip3/${domain}.ico`));
 
   // 2. Google faviconV2 at 128px
